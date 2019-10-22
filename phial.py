@@ -1,4 +1,5 @@
 import collections
+import json
 
 Request = collections.namedtuple(
     'Request',
@@ -44,9 +45,35 @@ class Response(_Response):
             ('Content-Type', self.content_type),
         )
 
+class HTMLResponse(Response):
+    def __new__(cls, content, **kwargs):
+        assert 'content_type' not in kwargs
+
+        return super().__new__(
+            cls,
+            content,
+            content_type='text/html',
+            **kwargs,
+        )
+
+class JSONResponse(Response):
+    def __new__(cls, content_json, **kwargs):
+        assert 'content_type' not in kwargs
+        assert 'content' not in kwargs
+
+        self = super().__new__(
+            cls,
+            content=json.dumps(content_json),
+            content_type='application/json',
+            **kwargs,
+        )
+        self.content_json = content_json
+        return self
+
 class TextResponse(Response):
     def __new__(cls, content, **kwargs):
         assert 'content_type' not in kwargs
+
         return super().__new__(
             cls,
             content,
