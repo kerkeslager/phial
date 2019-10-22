@@ -81,9 +81,45 @@ class TextResponse(Response):
             **kwargs,
         )
 
+_RedirectResponse = collections.namedtuple(
+    'RedirectResponse',
+    (
+        'location',
+        'permanent',
+    ),
+)
+
+class RedirectResponse(_RedirectResponse):
+    def __new__(cls, location, **kwargs):
+        assert isinstance(location, str)
+
+        permanent = kwargs.pop('permanent', True)
+        assert isinstance(permanent, bool)
+        assert len(kwargs) == 0
+
+        return super().__new__(
+            cls,
+            location=location,
+            permanent=permanent,
+        )
+
+    @property
+    def status(self):
+        return 308 if self.permanent else 307
+
+    @property
+    def headers(self):
+        return (('Location', self.location),)
+
+    @property
+    def content(self):
+        return (b'',)
+
 def _get_status(response):
     return {
         200: '200 OK',
+        307: '307 Temporary Redirect',
+        308: '308 Permanent Redirect',
     }[response.status]
 
 def _get_headers(response):
