@@ -1,8 +1,7 @@
 import phial
 
 def handler(request):
-    return phial.Response(
-        content_type='text/plain',
+    return phial.TextResponse(
         content='Hello, world\n',
     )
 

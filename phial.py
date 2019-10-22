@@ -18,7 +18,7 @@ _Response = collections.namedtuple(
 )
 
 class Response(_Response):
-    def __new__(cls, **kwargs):
+    def __new__(cls, content, **kwargs):
         status = kwargs.pop('status', 200)
         assert isinstance(status, int)
 
@@ -27,8 +27,6 @@ class Response(_Response):
 
         extra_headers = kwargs.pop('extra_headers', ())
         assert isinstance(extra_headers, tuple)
-
-        content = kwargs.pop('content')
 
         assert len(kwargs) == 0
 
@@ -44,6 +42,16 @@ class Response(_Response):
     def headers(self):
         return (
             ('Content-Type', self.content_type),
+        )
+
+class TextResponse(Response):
+    def __new__(cls, content, **kwargs):
+        assert 'content_type' not in kwargs
+        return super().__new__(
+            cls,
+            content,
+            content_type='text/plain',
+            **kwargs,
         )
 
 def _get_status(response):
