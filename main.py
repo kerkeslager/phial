@@ -2,9 +2,8 @@ import phial
 
 def handler(request):
     return phial.Response(
-        status='200 OK',
-        headers=[('Content-Type', 'text/plain')],
-        content=[b'Hello, world\n'],
+        content_type='text/plain',
+        content='Hello, world\n',
     )
 
 app = phial.App(handler)
