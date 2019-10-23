@@ -1,4 +1,5 @@
 import collections
+import http.cookie
 import json
 import urllib.parse
 
@@ -13,7 +14,7 @@ _Request = collections.namedtuple(
         'content',
         'content_length',
         'content_type',
-        'cookies',
+        'cookie',
         'method',
         'path',
         'parameters',
@@ -24,19 +25,40 @@ _Request = collections.namedtuple(
 
 class Request(_Request):
     def __new__(cls, env):
+        errors = []
+
         accept = env.get('HTTP_ACCEPT')
         accept_encoding = env.get('HTTP_ACCEPT_ENCODING')
         accept_language = env.get('HTTP_ACCEPT_LANGUAGE')
         content = env.get('CONTENT', '')
-        content_length = env.get('CONTENT_LENGTH')
         content_type = env.get('CONTENT_TYPE')
-        cookies = env.get('HTTP_COOKIE')
         method = env.get('REQUEST_METHOD')
         path = env.get('PATH_INFO')
         query = env.get('QUERY_STRING')
         user_agent = env.get('HTTP_USER_AGENT')
 
-        GET = urllib.parse.parse_qs(query)
+        content_length = env.get('CONTENT_LENGTH')
+
+        if content_length == '' or content_length is None:
+            content_length = 0
+        else:
+            try:
+                content_length = int(content_length)
+            except ValueError:
+                errors.append('Unable to parse Content-Length "{}"'.format(content_length))
+                content_length = 0
+
+        try:
+            cookie = http.cookie.SimpleCookie(env.get('HTTP_COOKIE'))
+        except:
+            cookie = http.cookie.SimpleCookie()
+
+
+        try:
+            GET = urllib.parse.parse_qs(query)
+        except:
+            GET = {}
+            errors.append('Unable to parse GET parameters from query string "{}"'.format(query))
 
         if method == 'GET':
             parameters = GET
@@ -51,7 +73,7 @@ class Request(_Request):
             content = content,
             content_length = content_length,
             content_type = content_type,
-            cookies=cookies,
+            cookie=cookie,
             method=method,
             parameters=parameters,
             path=path,
