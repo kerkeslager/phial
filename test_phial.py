@@ -3,6 +3,25 @@ from unittest import mock
 
 import phial
 
+class RequestTests(unittest.TestCase):
+    def test_GET(self):
+        request = phial.Request({
+            'REQUEST_METHOD': 'GET',
+            'QUERY_STRING': 'foo=bar&baz=qux',
+        })
+
+        self.assertEqual(request.GET['foo'], ['bar'])
+        self.assertEqual(request.GET['baz'], ['qux'])
+
+    def test_parameters(self):
+        request = phial.Request({
+            'REQUEST_METHOD': 'GET',
+            'QUERY_STRING': 'foo=bar&baz=qux',
+        })
+
+        self.assertEqual(request.parameters['foo'], ['bar'])
+        self.assertEqual(request.parameters['baz'], ['qux'])
+
 class ResponseTests(unittest.TestCase):
     def test_content_can_be_positional_argument(self):
         response = phial.Response('Hello, world\n', content_type='text/plain')

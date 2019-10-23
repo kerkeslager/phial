@@ -1,12 +1,66 @@
 import collections
 import json
+import urllib.parse
 
-Request = collections.namedtuple(
+_Request = collections.namedtuple(
     'Request',
     (
-        'environ',
+        'env',
+        'GET',
+        'accept',
+        'accept_encoding',
+        'accept_language',
+        'content',
+        'content_length',
+        'content_type',
+        'cookies',
+        'method',
+        'path',
+        'parameters',
+        'query',
+        'user_agent',
     )
 )
+
+class Request(_Request):
+    def __new__(cls, env):
+        accept = env.get('HTTP_ACCEPT')
+        accept_encoding = env.get('HTTP_ACCEPT_ENCODING')
+        accept_language = env.get('HTTP_ACCEPT_LANGUAGE')
+        content = env.get('CONTENT', '')
+        content_length = env.get('CONTENT_LENGTH')
+        content_type = env.get('CONTENT_TYPE')
+        cookies = env.get('HTTP_COOKIE')
+        method = env.get('REQUEST_METHOD')
+        path = env.get('PATH_INFO')
+        query = env.get('QUERY_STRING')
+        user_agent = env.get('HTTP_USER_AGENT')
+
+        GET = urllib.parse.parse_qs(query)
+
+        if method == 'GET':
+            parameters = GET
+
+        result = super().__new__(
+            cls,
+            env=env,
+            GET=GET,
+            accept=accept,
+            accept_encoding=accept_encoding,
+            accept_language=accept_language,
+            content = content,
+            content_length = content_length,
+            content_type = content_type,
+            cookies=cookies,
+            method=method,
+            parameters=parameters,
+            path=path,
+            query=query,
+            user_agent=user_agent,
+        )
+
+        result.subpath = path
+        return result
 
 _Response = collections.namedtuple(
     'Response',
@@ -137,8 +191,8 @@ def _get_content(response):
     return content
 
 def App(handler):
-    def app(environ, start_fn):
-        response = handler(Request(environ))
+    def app(env, start_fn):
+        response = handler(Request(env))
 
         start_fn(_get_status(response), _get_headers(response))
         return _get_content(response)
