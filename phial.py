@@ -191,6 +191,50 @@ class RedirectResponse(_RedirectResponse):
     def content(self):
         return (b'',)
 
+REQUEST_METHODS = (
+    'GET',
+    'HEAD',
+    'POST',
+    'PUT',
+    'PATCH',
+    'DELETE',
+    'CONNECT',
+    'OPTIONS',
+    'TRACE',
+)
+
+def default_method_not_allowed_handler(request):
+    return Response('')
+
+def default_options_handler(handlers):
+    def handler(request):
+        return Response(','.join(handlers.keys()))
+    return handler
+
+def route_on_method(**kwargs):
+    handlers = {}
+    for method in REQUEST_METHODS:
+        if method in kwargs:
+            handlers[method] = kwargs.pop(method)
+
+    method_not_allowed_handler = kwargs.pop(
+        method_not_allowed,
+        default_method_not_allowed_handler,
+    )
+
+    assert len(kwargs) == 0
+
+    if 'OPTIONS' not in handlers:
+        handlers['OPTIONS'] = default_options_handler(handlers)
+
+    def handler(request):
+        return handlers.get(
+            request.method.upper(),
+            method_not_allowed_handler,
+        )(request)
+
+    return handler
+
 def _get_status(response):
     return {
         200: '200 OK',
