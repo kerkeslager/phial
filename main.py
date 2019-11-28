@@ -1,11 +1,11 @@
-import phial
+import fwx
 
 def handler(request):
-    return phial.TextResponse(
+    return fwx.TextResponse(
         content='Hello, world\n',
     )
 
-app = phial.App(handler)
+app = fwx.App(handler)
 
 if __name__ == '__main__':
     from twisted.internet import reactor
