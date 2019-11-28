@@ -1,5 +1,5 @@
 import collections
-import http.cookie
+import http.cookies
 import json
 import urllib.parse
 
@@ -49,9 +49,9 @@ class Request(_Request):
                 content_length = 0
 
         try:
-            cookie = http.cookie.SimpleCookie(env.get('HTTP_COOKIE'))
+            cookie = http.cookies.SimpleCookie(env.get('HTTP_COOKIE'))
         except:
-            cookie = http.cookie.SimpleCookie()
+            cookie = http.cookies.SimpleCookie()
 
 
         try:
@@ -218,7 +218,7 @@ def route_on_method(**kwargs):
             handlers[method] = kwargs.pop(method)
 
     method_not_allowed_handler = kwargs.pop(
-        method_not_allowed,
+        'method_not_allowed',
         default_method_not_allowed_handler,
     )
 
