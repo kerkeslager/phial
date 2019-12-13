@@ -5,7 +5,7 @@ with open('README.md', 'r') as fh:
 
 setuptools.setup(
     name='fwx',
-    version='0.0.8',
+    version='0.0.9',
     author='David Kerkeslager',
     author_email='kerkeslager+pypi@gmail.com',
     description="fwx isn't a framework, it's a library.",
