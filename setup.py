@@ -5,14 +5,15 @@ with open('README.md', 'r') as fh:
 
 setuptools.setup(
     name='fwx',
-    version='0.0.1',
+    version='0.0.6',
     author='David Kerkeslager',
     author_email='kerkeslager+pypi@gmail.com',
     description="fwx isn't a framework, it's a library.",
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://github.com/kerkeslager/fwx',
-    py_modules=['fwx'],
+    packages=setuptools.find_packages('src'),
+    package_dir={ '': 'src' },
     classifiers=[
         'Programming Language :: Python :: 3',
         'License :: OSI Approved :: GNU Affero General Public License v3',
