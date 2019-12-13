@@ -24,7 +24,7 @@ _Request = collections.namedtuple(
 )
 
 class Request(_Request):
-    def __new__(cls, env):
+    def __new__(cls, env, **kwargs):
         errors = []
 
         accept = env.get('HTTP_ACCEPT')
@@ -62,6 +62,10 @@ class Request(_Request):
 
         if method == 'GET':
             parameters = GET
+        elif method == 'POST':
+            raise Exception('not yet implemented')
+        else:
+            parameters = None
 
         result = super().__new__(
             cls,
@@ -81,8 +85,15 @@ class Request(_Request):
             user_agent=user_agent,
         )
 
-        result.subpath = path
+        if path.startswith('/'):
+            result.subpath = path[1:]
+        else:
+            result.subpath = path
+
         return result
+
+def _get_request_from_env(env):
+    return Request(env)
 
 _Response = collections.namedtuple(
     'Response',
@@ -191,6 +202,35 @@ class RedirectResponse(_RedirectResponse):
     def content(self):
         return (b'',)
 
+def default_file_not_found_handler(request):
+    return Response('', status=404)
+
+def route_on_subpath(**kwargs):
+    routes = kwargs.pop('routes')
+    file_not_found_handler = kwargs.pop(
+        'file_not_found_hanlder',
+        default_file_not_found_handler,
+    )
+
+    if routes is None:
+        raise Exception('Keyword argument "routes" is required')
+
+    if len(kwargs) > 0:
+        raise Exception('Unexpected keyword argument')
+
+    def wrapped(request):
+        split_subpath = request.subpath.split('/', 1)
+        subpath = split_subpath[0]
+
+        if len(split_subpath) == 2:
+            request.subpath = split_subpath[1]
+        else:
+            request.subpath = ''
+
+        return routes.get(subpath, file_not_found_handler)(request)
+
+    return wrapped
+
 REQUEST_METHODS = (
     'GET',
     'HEAD',
@@ -258,7 +298,7 @@ def _get_content(response):
 
 def App(handler):
     def app(env, start_fn):
-        response = handler(Request(env))
+        response = handler(_get_request_from_env(env))
 
         start_fn(_get_status(response), _get_headers(response))
         return _get_content(response)
