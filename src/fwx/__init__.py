@@ -266,7 +266,7 @@ REQUEST_METHODS = (
 )
 
 def default_method_not_allowed_handler(request):
-    return Response('')
+    return TextResponse('', status=405)
 
 def default_options_handler(handlers):
     def handler(request):
@@ -300,8 +300,15 @@ def route_on_method(**kwargs):
 def _get_status(response):
     return {
         200: '200 OK',
+        201: '201 Created',
         307: '307 Temporary Redirect',
         308: '308 Permanent Redirect',
+        400: '400 Bad Request',
+        401: '401 Unauthorized',
+        403: '403 Forbidden',
+        404: '404 Not Found',
+        405: '405 Method Not Allowed',
+        451: '451 Unavailable For Legal Reasons',
     }[response.status]
 
 def _get_headers(response):
