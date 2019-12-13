@@ -132,8 +132,8 @@ class Response(_Response):
         content_type = kwargs.pop('content_type')
         assert isinstance(content_type, str)
 
-        extra_headers = kwargs.pop('extra_headers', ())
-        assert isinstance(extra_headers, tuple)
+        extra_headers = kwargs.pop('extra_headers', {})
+        assert isinstance(extra_headers, dict)
 
         assert len(kwargs) == 0
 
@@ -147,9 +147,25 @@ class Response(_Response):
 
     @property
     def headers(self):
-        return (
-            ('Content-Type', self.content_type),
-        )
+        # Start with the defaults
+        result = {
+            'X-Content-Type-Options': 'nosniff',
+        }
+
+        result = {**result, **(self.extra_headers)}
+
+        builtin_headers = {
+            'Content-Type': self.content_type,
+        }
+
+        for key, value in builtin_headers:
+            if key in result:
+                raise Exception('Header "{}" defined twice'.format(key))
+            else:
+                result[key] = value
+
+        return tuple(sorted(result.items()))
+
 
 class HTMLResponse(Response):
     def __new__(cls, content, **kwargs):
