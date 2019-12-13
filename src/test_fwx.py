@@ -5,19 +5,15 @@ import fwx
 
 class RequestTests(unittest.TestCase):
     def test_GET(self):
-        request = fwx.Request({
-            'PATH_INFO': '/',
+        request = fwx.Request('GET', '/', {
             'QUERY_STRING': 'foo=bar&baz=qux',
-            'REQUEST_METHOD': 'GET',
         })
 
         self.assertEqual(request.GET['foo'], ['bar'])
         self.assertEqual(request.GET['baz'], ['qux'])
 
     def test_parameters(self):
-        request = fwx.Request({
-            'PATH_INFO': '/',
-            'REQUEST_METHOD': 'GET',
+        request = fwx.Request('GET', '/', {
             'QUERY_STRING': 'foo=bar&baz=qux',
         })
 
@@ -144,10 +140,7 @@ class route_on_subpath_Tests(unittest.TestCase):
         )
 
         self.assertEqual(
-            router(fwx.Request({
-                'PATH_INFO': '/bar/bara/anne/',
-                'REQUEST_METHOD': 'GET',
-            })).content,
+            router(fwx.Request('GET', '/bar/bara/anne/')).content,
             'bar',
         )
 
@@ -161,10 +154,7 @@ class route_on_subpath_Tests(unittest.TestCase):
         )
 
         self.assertEqual(
-            router(fwx.Request({
-                'PATH_INFO': '/bar/bara/anne/',
-                'REQUEST_METHOD': 'GET',
-            })).content,
+            router(fwx.Request('GET', '/bar/bara/anne/')).content,
             'bara/anne/',
         )
 
@@ -178,12 +168,17 @@ class route_on_subpath_Tests(unittest.TestCase):
         )
 
         self.assertEqual(
-            router(fwx.Request({
-                'PATH_INFO': '/bar/bara/anne/',
-                'REQUEST_METHOD': 'GET',
-            })).content,
+            router(fwx.Request('GET', '/bar/bara/anne/')).content,
             '/bar/bara/anne/',
         )
+
+class default_file_not_found_Tests(unittest.TestCase):
+    def test_responds(self):
+        response = fwx.default_file_not_found_handler(
+            fwx.Request('GET', '/bar/bara/anne/'),
+        )
+
+        self.assertNotEqual(response, None)
 
 if __name__ == '__main__':
     unittest.main()

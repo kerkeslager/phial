@@ -8,6 +8,7 @@ _Request = collections.namedtuple(
     (
         'env',
         'GET',
+        'POST',
         'accept',
         'accept_encoding',
         'accept_language',
@@ -24,7 +25,10 @@ _Request = collections.namedtuple(
 )
 
 class Request(_Request):
-    def __new__(cls, env, **kwargs):
+    def __new__(cls, method, path, env=None):
+        if env is None:
+            env = {}
+
         errors = []
 
         accept = env.get('HTTP_ACCEPT')
@@ -32,8 +36,6 @@ class Request(_Request):
         accept_language = env.get('HTTP_ACCEPT_LANGUAGE')
         content = env.get('CONTENT', '')
         content_type = env.get('CONTENT_TYPE')
-        method = env.get('REQUEST_METHOD')
-        path = env.get('PATH_INFO')
         query = env.get('QUERY_STRING')
         user_agent = env.get('HTTP_USER_AGENT')
 
@@ -53,17 +55,31 @@ class Request(_Request):
         except:
             cookie = http.cookies.SimpleCookie()
 
-
         try:
             GET = urllib.parse.parse_qs(query)
         except:
             GET = {}
             errors.append('Unable to parse GET parameters from query string "{}"'.format(query))
 
+        if method == 'POST':
+            try:
+                if content_type == 'application/x-www-form-urlencoded':
+                    POST = urllib.parse.parse_qs(content)
+                else:
+                    POST = {}
+                    errors.append('Unable to parse POST parameters from content string "{}"'.format(content))
+
+            except:
+                POST = {}
+                errors.append('Unable to parse POST parameters from content string "{}"'.format(content))
+
+        else:
+            POST = {}
+
         if method == 'GET':
             parameters = GET
         elif method == 'POST':
-            raise Exception('not yet implemented')
+            parameters = POST
         else:
             parameters = None
 
@@ -71,6 +87,7 @@ class Request(_Request):
             cls,
             env=env,
             GET=GET,
+            POST=POST,
             accept=accept,
             accept_encoding=accept_encoding,
             accept_language=accept_language,
@@ -93,7 +110,9 @@ class Request(_Request):
         return result
 
 def _get_request_from_env(env):
-    return Request(env)
+    method = env.get('REQUEST_METHOD')
+    path = env.get('PATH_INFO')
+    return Request(method, path, env)
 
 _Response = collections.namedtuple(
     'Response',
@@ -203,12 +222,15 @@ class RedirectResponse(_RedirectResponse):
         return (b'',)
 
 def default_file_not_found_handler(request):
-    return Response('', status=404)
+    return TextResponse(
+        'Path "{}" with query "{}" not found'.format(request.path, request.query),
+        status=404,
+    )
 
 def route_on_subpath(**kwargs):
     routes = kwargs.pop('routes')
     file_not_found_handler = kwargs.pop(
-        'file_not_found_hanlder',
+        'file_not_found_handler',
         default_file_not_found_handler,
     )
 
