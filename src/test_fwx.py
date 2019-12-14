@@ -41,14 +41,14 @@ class ResponseTests(unittest.TestCase):
 
     def test_headers(self):
         response = fwx.Response(
-            content_type='text/plain',
+            content_type='text/plain; charset=utf-8',
             content='Hello, world\n',
         )
 
         self.assertEqual(
             response.headers,
             (
-                ('Content-Type', 'text/plain'),
+                ('Content-Type', 'text/plain; charset=utf-8'),
                 ('X-Content-Type-Options', 'nosniff'),
             ),
         )
@@ -56,12 +56,12 @@ class ResponseTests(unittest.TestCase):
 class HTMLResponseTests(unittest.TestCase):
     def test_sets_content_type(self):
         response = fwx.HTMLResponse('<html><body>Hello, world</body></html>')
-        self.assertEqual(response.content_type, 'text/html')
+        self.assertEqual(response.content_type, 'text/html; charset=utf-8')
 
 class JSONResponseTests(unittest.TestCase):
     def test_sets_content_type(self):
         response = fwx.JSONResponse({ 'foo': 'bar', 'baz': 42 })
-        self.assertEqual(response.content_type, 'application/json')
+        self.assertEqual(response.content_type, 'application/json; charset=utf-8')
 
     def test_sets_content(self):
         response = fwx.JSONResponse({ 'foo': 'bar', 'baz': 42 })
@@ -74,7 +74,7 @@ class JSONResponseTests(unittest.TestCase):
 class TextResponseTests(unittest.TestCase):
     def test_sets_content_type(self):
         response = fwx.TextResponse('Hello, world\n')
-        self.assertEqual(response.content_type, 'text/plain')
+        self.assertEqual(response.content_type, 'text/plain; charset=utf-8')
 
 class RedirectResponse(unittest.TestCase):
     def test_takes_location_as_positional_argument(self):

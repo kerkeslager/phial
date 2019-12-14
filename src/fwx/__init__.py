@@ -174,7 +174,7 @@ class HTMLResponse(Response):
         return super().__new__(
             cls,
             content,
-            content_type='text/html',
+            content_type='text/html; charset=utf-8',
             **kwargs,
         )
 
@@ -186,7 +186,7 @@ class JSONResponse(Response):
         self = super().__new__(
             cls,
             content=json.dumps(content_json),
-            content_type='application/json',
+            content_type='application/json; charset=utf-8',
             **kwargs,
         )
         self.content_json = content_json
@@ -199,7 +199,7 @@ class TextResponse(Response):
         return super().__new__(
             cls,
             content,
-            content_type='text/plain',
+            content_type='text/plain; charset=utf-8',
             **kwargs,
         )
 
