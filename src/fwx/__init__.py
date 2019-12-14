@@ -158,7 +158,7 @@ class Response(_Response):
             'Content-Type': self.content_type,
         }
 
-        for key, value in builtin_headers:
+        for key, value in builtin_headers.items():
             if key in result:
                 raise Exception('Header "{}" defined twice'.format(key))
             else:

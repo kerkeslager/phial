@@ -49,6 +49,7 @@ class ResponseTests(unittest.TestCase):
             response.headers,
             (
                 ('Content-Type', 'text/plain'),
+                ('X-Content-Type-Options', 'nosniff'),
             ),
         )
 
